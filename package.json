@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/GwMamba/tinyapp-/issues"
   },
-  "homepage": "https://github.com/GwMamba/tinyapp-#readme"
+  "homepage": "https://github.com/GwMamba/tinyapp-#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
 }
