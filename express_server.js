@@ -66,6 +66,16 @@ app.post("/urls/:id/delete", (req, res) => {
   }
 });
 
+app.post("/urls/:id/update", (req, res) => {
+  const id = req.params.id;
+  const updateURL = req.body.updateURL;
+  if (urlDatabase[id]) {
+    res.redirect("/urls");
+  } else {
+    res.status(404).send("URL not found")
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
