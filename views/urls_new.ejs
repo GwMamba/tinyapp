@@ -1,39 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-  <link
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+
+    <!-- Bootstrap CSS -->
+    <link
       rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
       integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
       crossorigin="anonymous"
     />
-  <title>TinyApp</title>
-</head>
-<body>
-  <div class="card-header"> <%- include('partials/_header') %> </div>
-  <main style="margin: 1em;">
-    <h3>My URLs</h3>
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">Short URL ID</th>
-          <th scope="col">Long URL</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% for (let id in urls) { %>
-          <tr>
-            <td><%= id %></td>
-            <td><%= urls[id] %></td>
-          </tr>
-        <% } %>
-      </tbody>
-    </table>
-  </main>
-  <!-- Bootstrap JS -->
-  <script
+
+    <title>New URL - TinyApp Example</title>
+  </head>
+
+  <body>
+    <%- include('partials/_header') %>
+
+    <main style="margin: 1em;">
+      <h3>Create TinyURL</h3>
+      <form class="form-inline" action="/urls" method="POST">
+        <div class="form-group mb-2">
+          <label for="longURL">Enter a URL:</label>
+          <input
+            class="form-control"
+            type="text"
+            name="longURL"
+            placeholder="http://"
+            style="width: 300px; margin: 1em"
+          />
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+      </form>
+    </main>
+    <!-- Bootstrap JS -->
+    <script
       src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
       integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
       crossorigin="anonymous"
@@ -48,5 +53,5 @@
       integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
       crossorigin="anonymous"
     ></script>
-</body>
+  </body>
 </html>
