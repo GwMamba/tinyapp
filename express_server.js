@@ -43,6 +43,10 @@ app.post("/urls", (req, res) => {
   res.send("Ok"); // Respond with 'Ok' (we will replace this)
 });
 
+function generateRandomString() {
+  Math.random().toString(36).substring(2, 8); // generates a random 6 digit aplhanumeric string.""
+}
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
