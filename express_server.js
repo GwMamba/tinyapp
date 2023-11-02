@@ -26,6 +26,12 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+app.get("/u/:id", (req, res) => {
+  const id = req.params.id;
+  const longURL = urlDatabase[id]; // const longURL = ...
+  res.redirect(longURL);
+});
+
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
@@ -44,8 +50,16 @@ app.post("/urls", (req, res) => {
 });
 
 function generateRandomString() {
-  Math.random().toString(36).substring(2, 8); // generates a random 6 digit aplhanumeric string.""
-}
+  Math.random().toString(36).substring(2, 8); // generates random 6 digit aplhanumeric string.
+};
+
+//storing the long url,
+app.post('/urls', (req, res) => {
+  const longURL = req.body.longURL; //long url from the request body
+  const ID = generateRandomString();  // generate short id
+  urlDatabase[ID] = longURL;  //stick into the database
+  res.redirect(`/urls/${shortURL}`);  //redirect
+});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
