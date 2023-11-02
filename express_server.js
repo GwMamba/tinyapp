@@ -44,11 +44,6 @@ app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
-app.post("/urls", (req, res) => {
-  console.log(req.body); // Log the POST request body to the console
-  res.send("Ok"); // Respond with 'Ok' (we will replace this)
-});
-
 function generateRandomString() {
   Math.random().toString(36).substring(2, 8); // generates random 6 digit aplhanumeric string.
 };
@@ -59,6 +54,16 @@ app.post('/urls', (req, res) => {
   const ID = generateRandomString();  // generate short id
   urlDatabase[ID] = longURL;  //stick into the database
   res.redirect(`/urls/${shortURL}`);  //redirect
+});
+
+app.post("/urls/:id/delete", (req, res) => {
+  const id = req.params.id;
+  if (urlDatabase[id]) {
+    delete urlDatabase[id];
+    res.redirect("/urls");
+  } else {
+    res.status(404).send("URL not found")
+  }
 });
 
 app.listen(PORT, () => {
