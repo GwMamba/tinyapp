@@ -9,16 +9,46 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+
+function generateRandomString() {
+  return Math.random().toString(36).substring(2, 8); 
+};  // generates random 6 digit aplhanumeric string.
+
+
 // Middleware to translate/parse the body
-app.use(express.urlencoded({ extended: true }));
+const bodyParser = require("body-parser"); // middleware
+const cookieParser = require("cookie-parser"); // sets up cookies
+
+//app.use(cookieParser.urlencoded({ extended: true }));//crashes with this line.
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true })); // need to clarify. Apparent creates req.body
+
+
+app.get("/", (req, res) => {
+  res.send("Hello!");
+});
 
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
-app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+/*
+app.get("/urls/:login", (req, res) => {
+  const templateVars = {
+    username: req.cookies["username"],
+  };
+  res.render("urls_login", templateVars);
+});
+*/
+
+app.get("/urls/:id", (req, res) => {
+  const templateVars = { 
+    id: req.params.id, 
+    longURL: urlDatabase[req.params.id], 
+    username: req.cookies["username"],  // Add this line to pass the username
+  };
+  res.render("urls_show", templateVars);
 });
 
 app.get("/urls/:id", (req, res) => {
@@ -32,18 +62,11 @@ app.get("/u/:id", (req, res) => {
   res.redirect(longURL);
 });
 
-app.get("/", (req, res) => {
-  res.send("Hello!");
-});
+
 
 /////////////////////////////////////////////
 // app.get above with definitions, app.post below with definitions
 /////////////////////////////////////////////
-
-
-function generateRandomString() {
-  return Math.random().toString(36).substring(2, 8); 
-};  // generates random 6 digit aplhanumeric string.
 
 //storing the long url,
 app.post('/urls', (req, res) => {
@@ -52,9 +75,6 @@ app.post('/urls', (req, res) => {
   urlDatabase[ID] = longURL;  //stick into the database
   res.redirect(`/urls/${ID}`);  //redirect
 });
-
-
-
 
 app.post("/urls/:id/delete", (req, res) => {
   const id = req.params.id;
@@ -79,19 +99,26 @@ app.post("/urls/:id/update", (req, res) => {
   }
 });
 
-/*
-app.post("/urls/:id/update", (req, res) => {
-  const id = req.params.id;
-  const newLongURL = req.body.newLongURL;
-  if (urlDatabase[id]) {
+app.post("/urls/login", (req, res) => {
+  const { username } = req.body;
+  if (username) {
+    res.cookie("username", username);
     res.redirect("/urls");
   } else {
-    res.status(404).send("URL not found")
+    res.status(404).send("Bad Request. Please provide a username")
   }
+});
+
+/*
+app.post("/urls/login", (req, res) => { // Insert Login Code Here
+  let username = req.body.username;
+  // let password = req.body.password;
+  res.send(`Username: ${username}`);
 });
 */
 
 //////////////////////////////////////////////////
+// app.post above with definitions
 
 //////////////////////////////////////////////////
 
