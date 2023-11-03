@@ -32,29 +32,29 @@ app.get("/u/:id", (req, res) => {
   res.redirect(longURL);
 });
 
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
+/////////////////////////////////////////////
+// app.get above with definitions, app.post below with definitions
+/////////////////////////////////////////////
+
+
 function generateRandomString() {
-  Math.random().toString(36).substring(2, 8); // generates random 6 digit aplhanumeric string.
-};
+  return Math.random().toString(36).substring(2, 8); 
+};  // generates random 6 digit aplhanumeric string.
 
 //storing the long url,
 app.post('/urls', (req, res) => {
   const longURL = req.body.longURL; //long url from the request body
   const ID = generateRandomString();  // generate short id
   urlDatabase[ID] = longURL;  //stick into the database
-  res.redirect(`/urls/${shortURL}`);  //redirect
+  res.redirect(`/urls/${ID}`);  //redirect
 });
+
+
+
 
 app.post("/urls/:id/delete", (req, res) => {
   const id = req.params.id;
@@ -68,13 +68,32 @@ app.post("/urls/:id/delete", (req, res) => {
 
 app.post("/urls/:id/update", (req, res) => {
   const id = req.params.id;
+  console.log(id);
   const updateURL = req.body.updateURL;
+  console.log(updateURL);
+  if (urlDatabase[id]) {
+    urlDatabase[id] = updateURL;
+    res.redirect("/urls");
+  } else {
+    res.status(404).send("URL not found")
+  }
+});
+
+/*
+app.post("/urls/:id/update", (req, res) => {
+  const id = req.params.id;
+  const newLongURL = req.body.newLongURL;
   if (urlDatabase[id]) {
     res.redirect("/urls");
   } else {
     res.status(404).send("URL not found")
   }
 });
+*/
+
+//////////////////////////////////////////////////
+
+//////////////////////////////////////////////////
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
