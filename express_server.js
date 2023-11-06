@@ -49,6 +49,10 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
+  if (!req.cookies.email) {
+    res.redirect("/login");
+  }
+  const userID = req.cookies.userID;
   const templateVars = {
     email: req.cookies["email"],
     urls: urlDatabase,
@@ -62,7 +66,16 @@ app.get("/u/:id", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = { email: req.cookies["email"] };
+  if (!req.cookies.email) {
+    res.redirect("/login");
+  }
+  
+  const templateVars = {
+    email: isUser.email
+  }
+  if (!req.cookies.email) {
+    res.redirect("/login");
+  }  
   res.render("urls_new", templateVars);
 });
 
@@ -78,19 +91,6 @@ app.get("/register", (req, res) => {
   res.render("register", templateVars);
 });
 
-app.get("/urls/new", (req, res) => {
-  if (!req.cookies.email) {
-    res.redirect("/login");
-  }
-  const isUser = req.cookies.userID;
-  const templateVars = {
-    email: isUser.email
-  }
-  if (!req.cookies.email) {
-    res.redirect("/login");
-  }  
-  res.render("urls_new", templateVars);
-});
 
 app.get("/urls/:id", (req, res) => {
   const templateVars = {
@@ -110,7 +110,7 @@ app.get("/urls/:id", (req, res) => {
     return res.status(404).send("The requested URL was not found on this server.");
   }
   // If user not logged in:
-  if (userID = null) {
+  if (id = null) {
     return res.status(401).send(`
     <html>
       <body>
@@ -170,24 +170,30 @@ app.post("/logout", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  const user_id = generateRandomString(3);
   const email = req.body.email;
   const password = req.body.password;
 
   if (!email || !password) {
-    return res.status(400).send("Please provide an email AND password");
+    return res.status(400).send("Bad Request - Please provide an email AND password");
   }
 
   if (isUser(email, users)) {
     return res
       .status(400)
-      .send("This e-mail address has already been registered");
+      .send("Bad Request - This e-mail address has already been registered");
   }
+  const id = generateRandomString(6);
+  const user = {
+    id,
+    email,
+    password
+  };
+  users[id] = user;
+
   console.log(users);
 
-  users[user_id] = { id: user_id, email, password };
   res.cookie("email", email);
-  res.redirect("/login");
+res.redirect("/login");
 });
 
 app.get("/u/:id", (req, res) => {
