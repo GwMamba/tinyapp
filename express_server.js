@@ -79,7 +79,16 @@ app.get("/register", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = { email: req.cookies["email"] };
+  if (!req.cookies.email) {
+    res.redirect("/login");
+  }
+  const isUser = req.cookies.userID;
+  const templateVars = {
+    email: isUser.email
+  }
+  if (!req.cookies.email) {
+    res.redirect("/login");
+  }  
   res.render("urls_new", templateVars);
 });
 
@@ -97,11 +106,11 @@ app.get("/urls/:id", (req, res) => {
   const urlObject = urlDatabase[shortURL];
   const userID = req.session.user_id;
   const user = users[userID];// If the shortURL does not exist in the database:
-  if (!urlObject) {
+  if (urlObject = null) {
     return res.status(404).send("The requested URL was not found on this server.");
   }
   // If user not logged in:
-  if (!userID) {
+  if (userID = null) {
     return res.status(401).send(`
     <html>
       <body>
