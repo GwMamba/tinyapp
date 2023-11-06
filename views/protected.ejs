@@ -1,0 +1,26 @@
+// POST /login
+app.post('/login', (req, res) => { // grab the email and password from the body
+  const email = req.body.email;
+  const password = req.body.password;
+  if (!email || !password) { // did they not give us an email and a password?
+    return res.status(400).send('Please provide an email and a password');
+  }
+  let foundUser = null;  // look up the user based on their email
+  for (const userId in users) {
+    const user = users[userId];
+    if (user.email === email) { // we found our user!!
+      foundUser = user;
+    }
+  }
+    if (!foundUser) { // did we not find a user?
+    return res.status(400).send('passwords do not match');
+  }  // hooray! the user is who they say they are!
+  res.cookie('userId', foundUser.id); // set the cookie (log the user in)
+  // send user to a protected page that only valid  in users can see
+  res.redirect('/protected');
+});
+
+
+const getUserByEmail = function(email) {
+
+};
