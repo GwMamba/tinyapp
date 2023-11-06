@@ -1,49 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-  <link
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+
+    <!-- Bootstrap CSS -->
+    <link
       rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
       integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
       crossorigin="anonymous"
     />
-  <title>TinyApp</title>
-</head>
-<body>
-  <div class="card-header"> <%- include('partials/_header') %> </div>
-  <main style="margin: 1em;">
-    <h3>My URLs</h3>
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">Short URL ID</th>
-          <th scope="col">Long URL</th>
-          <th scope="col">Edit</th>
-          <th scope="col">Delete</th>          
-        </tr>
-      </thead>
-      <tbody>
-        <% for (let id in urls) { %>
+    <title>TinyApp</title>
+  </head>
+  <body>
+    <%- include('partials/_header.ejs') %>
+    <main style="margin: 1em;">
+      <h3>My URLs</h3>
+      <table class="table">
+        <thead>
           <tr>
-            <td><%= id %></td>
-            <td><%= urls[id] %></td>
-            <td>
-              <a href="/urls/<%= id %>" class="btn btn-outline-warning">Edit</a>
-            </td>
-            <td>
-              <form method="POST" action="/urls/9sm5xK/delete">
-                <button type="submit" class="btn btn-outline-danger">Delete</button>
-              </form>
-            </td>
+            <th scope="col">Short URL ID</th>
+            <th scope="col">Long URL</th>
+            <th scope="col">Edit</th>
+            <th scope="col">Delete</th> 
           </tr>
-        <% } %>
-      </tbody>
-    </table>
-  </main>
-  <!-- Bootstrap JS -->
-  <script
+        </thead>
+        <tbody>
+          <% for (let id in urls) { %>
+            <tr>
+              <td><%= id %></td>
+              <td><%= urls[id] %></td>
+              <td>
+                <!-- "Edit" column is added to the table. Each row in this column contains a link to the urls_show page for the corresponding URL -->
+              <a href="/urls/<%= id %>" class="btn btn-secondary">Edit</a>
+              </td>
+              <td>
+                <!-- Delete Button -->
+                <form method="POST" action="/urls/<%= id %>/delete">
+                  <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+              </td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </main>
+    <!-- Bootstrap JS -->
+    <script
       src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
       integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
       crossorigin="anonymous"
@@ -58,5 +65,5 @@
       integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
       crossorigin="anonymous"
     ></script>
-</body>
+  </body>
 </html>
