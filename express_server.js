@@ -9,6 +9,30 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+};
+
+const getUserIdFromEmail = function(email) {
+  let foundUserId = null;
+  for (const userId in users) {
+    if (users[userId].email === email) {
+      foundUserId = users[userId].id;
+    }
+  }
+
+  return foundUserId;
+};
+
 
 function generateRandomString() {
   return Math.random().toString(36).substring(2, 8); 
@@ -29,18 +53,33 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
-  res.render("urls_index", templateVars);
+  const userID = req.session.user_id;
+  // if user is not logged in
+  if (!userID) {
+    // return a 404 error message
+    return res.status(401).send(`
+    <html>
+      <body>
+        <p>You must be <a href="/login">logged in</a> to view this page.</p>
+      </body>
+    </html>
+    `);
+  }
 });
 
-/*
-app.get("/urls/:login", (req, res) => {
-  const templateVars = {
-    username: req.cookies["username"],
-  };
-  res.render("urls_login", templateVars);
+app.get("/login", (req, res) => {
+  const currentUser = users[req.session.user_id];
+  const templateVars = { user: currentUser };
+
+  if (!currentUser) {
+    return res.render("login", templateVars);
+  }
+
+  if (currentUser) {
+    return res.redirect("/urls");
+  }
 });
-*/
+
 
 app.get("/urls/:id", (req, res) => {
   const templateVars = { 
@@ -52,9 +91,36 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id] };
+  const shortURL = req.params.id;
+  const urlObject = urlDatabase[shortURL];
+  const userID = req.session.user_id;
+  const user = users[userID];// If the shortURL does not exist in the database:
+  if (!urlObject) {
+    return res.status(404).send("The requested URL was not found on this server.");
+  }
+  // If user not logged in:
+  if (!userID) {
+    return res.status(401).send(`
+    <html>
+      <body>
+        <p>You must be <a href="/login">logged in</a> to view this page.</p>
+      </body>
+    </html>
+    `);
+  }
+  // Use of helper function to check if the URL belongs to the logged in user:
+  if (!urlBelongsToUser(shortURL, userID, urlDatabase)) {
+    return res.status(403).send("You do not have permission to view this page");
+  }
+  // If URL exists and belongs to the user, proceed with rendering:
+  const templateVars = {
+    id: shortURL,
+    longURL: urlObject.longURL,
+    user: user
+  };
   res.render("urls_show", templateVars);
 });
+
 
 app.get("/u/:id", (req, res) => {
   const id = req.params.id;
@@ -109,13 +175,12 @@ app.post("/urls/login", (req, res) => {
   }
 });
 
-/*
-app.post("/urls/login", (req, res) => { // Insert Login Code Here
-  let username = req.body.username;
-  // let password = req.body.password;
-  res.send(`Username: ${username}`);
+
+app.post("/logout", (req, res) => { // Insert Login Code Here
+   req.session = null;
+   res.redirect("/login");
 });
-*/
+
 
 //////////////////////////////////////////////////
 // app.post above with definitions
