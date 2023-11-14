@@ -1,39 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Bootstrap CSS -->
-    <link
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+  <link
       rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
       integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
       crossorigin="anonymous"
     />
-    <title>Register</title>
-  </head>
-  <body>
-    <%- include('partials/_header') %>
-    <div class="container mt-5">
-      <div class="row">
-        <div class="col-md-6 offset-md-3">
-          <h1 class="mb-3">Create Account</h1>
-          <form method="POST" action="/register">
-            <div class="form-group">
-              <label for="email">Email address</label>
-              <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" required>
-            </div>
-            <div class="form-group">
-              <label for="password">Password:</label>
-              <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Register</button>
-          </form>
+  <title>Register - TinyApp</title>
+</head>
+<body>
+  <%- include('partials/_header') %>
+  <main style="margin: 1em;">
+    <h3>Create Account</h3>
+    <table class="table">
+      <Form action="/register" method="POST">
+        <div class="form-group">
+          <label for="email">Email Address:</label>
+          <input class="form-control" type="email" name="email" placeholder="Enter Email" style="width: 300px;">
         </div>
-      </div>
-    </div>
-    <!-- Bootstrap JS -->
-    <script
+        <div class="form-group">
+          <label for="password">Password:</label>
+          <input class="form-control" type="password" name="password" placeholder="Password" style="width: 300px;">
+        </div>
+        <button type="submit" class="btn btn-primary">Register</button>
+      </Form>
+  </main>
+  <!-- Bootstrap JS -->
+  <script
       src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
       integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
       crossorigin="anonymous"
@@ -48,5 +44,5 @@
       integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
       crossorigin="anonymous"
     ></script>
-  </body>
+</body>
 </html>
