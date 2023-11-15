@@ -1,6 +1,8 @@
 const express = require("express");
-const cookieParser = require("cookie-parser"); // sets up cookies
+const cookieSession = require('cookie-session');
 const morgan = require("morgan");
+const bcrypt = require("bcryptjs");
+const {isUser, generateRandomString} = require("./helper.js");
 const app = express();
 const PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
@@ -23,38 +25,25 @@ const users = {
   },
 };
 
-const isUser = function(email, users) {
-  for (const user in users) {
-    let userObject = {};
-    if (users[user]['email'] === email) {
-      userObject = users[user];
-      return userObject;
-    }
-  }
-  return null;
-};
-
-function generateRandomString() {
-  return Math.random().toString(36).substring(2, 8);
-}  // generates random 6 digit aplhanumeric string.
-
-
 // Middleware to translate/parse the body
-app.use(cookieParser());//crashes with this line.
 app.use(morgan("dev"));
 app.use(express.urlencoded({ extended: true })); // need to clarify. Apparent creates req.body
+app.use(cookieSession({
+  name: 'session',
+  keys: ["key1", "key2"],
+}));
 
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
 app.get("/urls", (req, res) => {
-  if (!req.cookies.email) {
+  const email = req.session.email;
+  if (!email) {
     res.redirect("/login");
   }
-  const userID = req.cookies.userID;
   const templateVars = {
-    email: req.cookies["email"],
+    email: req.session["email"],
     urls: urlDatabase,
   };
   res.render("urls_index", templateVars);
@@ -66,39 +55,46 @@ app.get("/u/:id", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const email = req.cookies.email;
+  const email = req.session.email;
 
   if (!email) {
     res.redirect("/login");
   }
-  
-  const templateVars = {
-    email: isUser(email, users),
+  const foundUser = isUser(email, users)
+  let usersEmail = null;
+
+  if (foundUser) {
+    usersEmail = foundUser.email;
   }
-  if (!email) {
-    res.redirect("/login");
-  }  
+  const templateVars = {
+    email: usersEmail
+  }
   res.render("urls_new", templateVars);
 });
 
 app.get("/login", (req, res) => {
-  const email = req.cookies.email;
+  const email = req.session.email;
+  const foundUser = isUser(email, users)
+  let usersEmail = null;
 
-  const templateVars = {
-    email: isUser(email, users)
+  if (foundUser) {
+    usersEmail = foundUser.email;
   }
+  const templateVars = {
+    email: usersEmail
+  };
   res.render("login", templateVars);
 });
 
 app.get("/register", (req, res) => {
-  const templateVars = { email: req.cookies["email"] };
+  const templateVars = { email: req.session["email"] };
   res.render("register", templateVars);
 });
 
 
 app.get("/urls/:id", (req, res) => {
   const templateVars = {
-    email: req.cookies["email"],
+    email: req.session["email"],
     id: req.params.id,
     longURL: urlDatabase[req.params.id],
   };
@@ -110,11 +106,11 @@ app.get("/urls/:id", (req, res) => {
   const urlObject = urlDatabase[shortURL];
   const userID = req.session.user_id;
   const user = users[userID];// If the shortURL does not exist in the database:
-  if (urlObject = null) {
+  if (urlObject === null) {
     return res.status(404).send("The requested URL was not found on this server.");
   }
   // If user not logged in:
-  if (id = null) {
+  if (id === null) {
     return res.status(401).send(`
     <html>
       <body>
@@ -154,23 +150,26 @@ app.post("/urls", (req, res) => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  if (!isUser(email, users)) {
+  const user = isUser(email, users);
+
+  if (!user) {
     return res.status(403).send("The user associated with this email address could not be found");
   }
-  if (isUser(email, users)) {
-    if (password !== isUser(email, users)['password']) {
-      return res.status(403).send('Sorry, the password you entered is incorrect. Please try again.');
-    }
+  const passwordMatch = bcrypt.compareSync(password, user.password);
+
+  if (!passwordMatch) {
+    return res.status(403).send('Sorry, the password you entered is incorrect. Please try again.');
   }
-  res.cookie("email", email);
+  req.session.email = email;
   res.redirect("/urls");
 });
 
 
 app.post("/logout", (req, res) => {
-  const email = req.body.email;
-  res.clearCookie("email", email);
+  
+  req.session = null;
   res.redirect("login");
+
 });
 
 app.post("/register", (req, res) => {
@@ -187,17 +186,18 @@ app.post("/register", (req, res) => {
       .send("Bad Request - This e-mail address has already been registered");
   }
   const id = generateRandomString(6);
+
+  const hashedPassword = bcrypt.hashSync(password, 8);
+
   const user = {
     id,
     email,
-    password
+    password: hashedPassword
   };
   users[id] = user;
 
-  console.log(users);
-
-  res.cookie("email", email);
-res.redirect("/urls");
+  req.session.email = email;
+  res.redirect("/urls");
 });
 
 app.get("/u/:id", (req, res) => {
@@ -207,7 +207,7 @@ app.get("/u/:id", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   const templateVars = {
-    email: req.cookies["email"],
+    email: req.session["email"],
     id: req.params.id,
     longURL: urlDatabase[req.params.id],
   };
@@ -230,10 +230,8 @@ app.post("/urls/:id/update", (req, res) => {
   }
 });
 
-
 //////////////////////////////////////////////////
 // app.post above with definitions
-
 //////////////////////////////////////////////////
 
 app.listen(PORT, () => {
