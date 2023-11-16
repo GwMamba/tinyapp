@@ -53,9 +53,15 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id].longURL;
-  res.redirect(longURL);
+  const id = req.params.id;
+  if (urlDatabase[id]) {
+    const longURL = urlDatabase[id].longURL;
+    res.redirect(longURL);
+  } else {
+    res.status(404).send('The short URL you are trying to access does not exist.');
+  }
 });
+
 
 app.get("/urls/new", (req, res) => {
   const email = req.session.email;
@@ -63,7 +69,7 @@ app.get("/urls/new", (req, res) => {
   if (!email) {
     res.redirect("/login");
   }
-  const foundUser = isUser(email, users)
+  const foundUser = isUser(email, users);
   let usersEmail = null;
 
   if (foundUser) {
@@ -71,13 +77,13 @@ app.get("/urls/new", (req, res) => {
   }
   const templateVars = {
     email: usersEmail
-  }
+  };
   res.render("urls_new", templateVars);
 });
 
 app.get("/login", (req, res) => {
   const email = req.session.email;
-  const foundUser = isUser(email, users)
+  const foundUser = isUser(email, users);
   let usersEmail = null;
 
   if (foundUser) {
@@ -95,11 +101,22 @@ app.get("/register", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
+  const userID = req.session.userID;
+  if (!userID) {
+    return res.send("You need to be logged in.");
+  }
   const shortURL = req.params.id;
+  const url = urlDatabase[shortURL];
+  console.log("url", url);
+
   if (!urlDatabase[shortURL]) {
     res.send(
       "It looks like the shortened URL you're trying to access doesn't exist in our database. Please make sure you have the correct URL or create a new shortened link."
-    )}
+    );
+  }
+  if (userID !== url.userID) {
+    return res.send("You are not authorized to view this. The URL does not belong to you.");
+  }
   const templateVars = {
     email: req.session["email"],
     id: shortURL,
@@ -123,7 +140,7 @@ app.post("/urls", (req, res) => {
       "Access to this URL is restricted to logged-in users. Please log in to view this page."
     );
   }
-  urlDatabase[newId] = {longURL: req.body.longURL, userID: user.id}
+  urlDatabase[newId] = { longURL: req.body.longURL, userID: user.id };
 
   return res.redirect(`/urls/${newId}`);
 });
@@ -132,6 +149,7 @@ app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   const user = isUser(email, users);
+  console.log("user", user);
 
   if (!user) {
     return res.status(403).send("The user associated with this email address could not be found");
@@ -141,12 +159,13 @@ app.post("/login", (req, res) => {
   if (!passwordMatch) {
     return res.status(403).send('Sorry, the password you entered is incorrect. Please try again.');
   }
+  req.session.userID = user.id;
   req.session.email = email;
   res.redirect("/urls");
 });
 
 app.post("/logout", (req, res) => {
-  
+
   req.session = null;
   res.redirect("login");
 
@@ -176,6 +195,7 @@ app.post("/register", (req, res) => {
   users[id] = user;
 
   req.session.email = email;
+  req.session.userID = id;
   res.redirect("/urls");
 });
 
@@ -185,6 +205,10 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 app.post("/urls/:id/update", (req, res) => {
+  const userID = req.session.userID;
+  if (!userID) {
+    return res.send("You need to be logged in.");
+  }
   const id = req.params.id;
   const updateURL = req.body.updateURL;
   if (urlDatabase[id]) {
