@@ -33,7 +33,7 @@ app.use(cookieSession({
 }));
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.redirect("/login");
 });
 
 app.get("/urls", (req, res) => {
@@ -88,6 +88,7 @@ app.get("/login", (req, res) => {
 
   if (foundUser) {
     usersEmail = foundUser.email;
+    return res.redirect("/urls");
   }
   const templateVars = {
     email: usersEmail
@@ -96,7 +97,11 @@ app.get("/login", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  const templateVars = { email: req.session["email"] };
+  const userID = req.session.userID;
+  if (userID) {
+    return res.redirect("/urls");
+  }
+  const templateVars = { email: null };
   res.render("register", templateVars);
 });
 
@@ -183,7 +188,7 @@ app.post("/register", (req, res) => {
       .status(400)
       .send("Bad Request - This e-mail address has already been registered");
   }
-  const id = generateRandomString(6);
+  const id = generateRandomString();
 
   const hashedPassword = bcrypt.hashSync(password, 8);
 
@@ -208,6 +213,9 @@ app.post("/urls/:id/update", (req, res) => {
   const userID = req.session.userID;
   if (!userID) {
     return res.send("You need to be logged in.");
+  }
+  if (userID !== urlDatabase[id].userID) {
+    return res.send("Tsk, Tsk, Tsk. This URL does not belong to you.")
   }
   const id = req.params.id;
   const updateURL = req.body.updateURL;
