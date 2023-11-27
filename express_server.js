@@ -36,14 +36,16 @@ app.get("/", (req, res) => {
   res.redirect("/login");
 });
 
-app.get("/urls", (req, res) => {
-  const email = req.session.email;
-  if (!email) {
-    res.redirect("/login");
-  }
+
+  app.get("/urls", (req, res) => {
+    const userID = req.session.userID;
+    const email = req.session.email;
+    if (!email) {
+      res.redirect("/login");
+    }
   const user = isUser(email, users);
 
-  const urls = getURLsForUser(user.id, urlDatabase);
+  const urls = getURLsForUser(userID, urlDatabase);
 
   const templateVars = {
     email,
@@ -137,7 +139,7 @@ app.get("/urls/:id", (req, res) => {
 
 //storing the long url,
 app.post("/urls", (req, res) => {
-  const newId = generateRandomString(6);
+  const newId = generateRandomString();
   const user = isUser(req.session.email, users);
 
   if (!user) {
