@@ -212,16 +212,16 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 app.post("/urls/:id/update", (req, res) => {
+  const id = req.params.id;
+  const updateURL = req.body.updateURL;
   const userID = req.session.userID;
   if (!userID) {
     return res.send("You need to be logged in.");
   }
   if (userID !== urlDatabase[id].userID) {
     return res.send("Tsk, Tsk, Tsk. This URL does not belong to you.")
-  }
-  const id = req.params.id;
-  const updateURL = req.body.updateURL;
-  if (urlDatabase[id]) {
+  }  
+  if (urlDatabase[id].userID) {
     console.log(urlDatabase[id]);
     urlDatabase[id].longURL = updateURL;
     console.log(updateURL);
